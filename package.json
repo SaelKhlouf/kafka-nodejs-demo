@@ -11,6 +11,5 @@
   "license": "ISC",
   "dependencies": {
     "kafkajs": "^1.11.0"
-  },
-  "type": "module"
+  }
 }

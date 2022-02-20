@@ -1,26 +1,43 @@
-import { Kafka } from "kafkajs";
+const { Kafka } = require('kafkajs');
+const { config } = require('./config.js');
 
 const run = async () => {
     try
     {
-         const kafka = new Kafka({
-              clientId: "myapp",
-              brokers :["localhost:29092", "localhost:39092"],
-         });
+        const kafka = new Kafka({
+            clientId: config.kafka.CLIENT_ID,
+            brokers : config.kafka.BROKERS,
+        });
 
-        const consumer = kafka.consumer({"groupId": "test"});
-        console.log("Connecting.....");
+        const consumer = kafka.consumer({
+            groupId: config.kafka.CONSUMER_GROUP_ID
+        });
+
+        console.log("Connecting...");
+
         await consumer.connect();
+
         console.log("Connected!");
         
         await consumer.subscribe({
-            topic: "Users",
+            topic: config.kafka.TOPIC,
             fromBeginning: true
         });
         
         await consumer.run({
-            eachMessage: async result => {
-                console.log(`Received message ${result.message.value} on partition ${result.partition}`)
+            eachMessage: async ({ message, partition }) => {
+                try {
+                    console.log(`message Received : ${message.value} on partition : ${partition}`);
+
+                    const jsonObj = JSON.parse(message.value.toString());
+                    console.log(
+                        '******* Alert !!!!! *********',
+                        jsonObj
+                    );
+                    
+                  } catch (error) {
+                    console.log('Error while processing message : ', error);
+                  }
             }
         });
     }
